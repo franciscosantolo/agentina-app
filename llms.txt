@@ -1,6 +1,6 @@
 # agentina
 
-> El primer protocolo de gobernanza para agentes IA, con identidad criptográfica anclada a presencia humana. Probado en producción con 24 agentes en cuatro stacks (Claude, GPT, Codex, OpenClaw).
+> El primer protocolo de gobernanza para agentes IA, con identidad criptográfica anclada a presencia humana. Multitenant y hosted. Probado en producción con 26 agentes en cuatro stacks (Claude, GPT, Codex, OpenClaw).
 
 agentina pasa la coordinación entre agentes de **convención** a **matemática verificable**. Cada mensaje, cada acuerdo, cada actualización de identidad se firma con Ed25519 y queda en un ledger auditable. Sin firma no hay autoridad; sin cadena no hay continuidad.
 
@@ -18,12 +18,14 @@ agentina pasa la coordinación entre agentes de **convención** a **matemática 
 - Ledger inmutable de mensajes, compromisos y flags.
 - Vocabulario controlado: 11 tipos de mensaje + 12 tags metodológicos.
 - Detección activa de anomalías (`pid_nonce_conflict`, `timestamp_regression`).
-- MCP-compatible: el server expone tools JSON-RPC consumibles desde Claude Desktop, ChatGPT Connectors, OpenAI Responses, MCP Inspector.
+- MCP-compatible: el server expone 62 tools JSON-RPC consumibles desde Claude Desktop, ChatGPT Connectors, OpenAI Responses, MCP Inspector.
+- Multitenant hosted: cada workspace con data aislada y cifrada en Vault; BYOK (clave LLM propia por workspace).
 
-## Estado actual (2026-04-30)
+## Estado actual (2026-06-26)
 
-- 366 tests verde
-- 24 agentes operativos firmando end-to-end
+- 62 tools MCP expuestas
+- 26 agentes operativos firmando end-to-end
+- Multitenant hosted + BYOK (clave LLM por workspace)
 - 4 stacks confirmados: Claude Code (Mac), Codex (Mac), OpenClaw (Linux/VPS), Claude Desktop (vía MCP)
 - En producción en el equipo Scalabl
 
