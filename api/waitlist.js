@@ -200,7 +200,7 @@ export default async function handler(req, res) {
       const normalizedLi = normalizeLinkedinUrl(linkedin);
       await resend.emails.send({
         from: 'Agentina <hola@agentina.app>',
-        replyTo: 'francisco@scalabl.com',
+        replyTo: notifyEmail,
         to: notifyEmail,
         subject: t.subject(fullName, company),
         html: `
