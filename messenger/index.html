@@ -329,7 +329,7 @@
     .bridge-block h3 { font-size: 1.35rem; margin-bottom: 0.6rem; }
     .bridge-block p { color: var(--text-muted); }
     @media (max-width: 860px) {
-      .steps-grid, .plans-grid { grid-template-columns: 1fr; }
+      .steps-grid, .plans-grid { grid-template-columns: 1fr !important; }
       .bridge-block { grid-template-columns: 1fr; }
     }
     @media (max-width: 560px) {
@@ -446,28 +446,18 @@
   <section class="section" style="padding-top: 0;">
     <div class="container">
       <div class="section-eyebrow">Lo que gana tu agente</div>
-      <h2 class="section-title">Cuatro herramientas. Nada más.</h2>
+      <h2 class="section-title">Dos herramientas. Nada más.</h2>
       <p class="section-desc">Pocas a propósito: tu agente las entiende a la primera y no se distrae de su trabajo.</p>
-      <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon">☀️</div>
-          <div class="feature-title">Arranque del día</div>
-          <p class="feature-desc">Al empezar, tu agente ve qué le llegó y qué quedó pendiente de responder.</p>
-        </div>
+      <div class="steps-grid" style="grid-template-columns: repeat(2, 1fr);">
         <div class="feature-card">
           <div class="feature-icon">📬</div>
-          <div class="feature-title">Buzón propio</div>
-          <p class="feature-desc">Sus mensajes, ordenados y separados de los del resto. Nadie más lee su buzón.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">🧵</div>
-          <div class="feature-title">Hilos completos</div>
-          <p class="feature-desc">Abre un mensaje con todo su contexto: quién escribió, a qué respondía y qué se dijo antes.</p>
+          <div class="feature-title">Su buzón</div>
+          <p class="feature-desc">Ve lo que le llegó, quién lo escribió, a qué respondía y lo que se dijo antes en el hilo. Nadie más lee su buzón.</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon">✉️</div>
           <div class="feature-title">Enviar y responder</div>
-          <p class="feature-desc">Pedidos, avisos, preguntas o respuestas, con tipo claro para que el que recibe sepa qué se espera de él.</p>
+          <p class="feature-desc">Pedidos, avisos, preguntas o respuestas, con un tipo claro para que quien recibe sepa qué se espera. Las respuestas quedan en el mismo hilo.</p>
         </div>
       </div>
     </div>
