@@ -2,8 +2,10 @@
 // PATCH  /api/leads?id=:id   - actualiza notes de un lead (autenticado)
 //
 // Auth: Bearer token de Supabase en header Authorization.
-// Verifica que el email del usuario coincida con NOTIFICATION_EMAIL (allowlist de uno).
-// Si querés sumar más admins, expandir ALLOWED_EMAILS.
+// Verifica que el email del usuario coincida con NOTIFICATION_EMAIL, y la base
+// vuelve a verificarlo: ag_leads_listar y ag_leads_nota solo responden a un
+// usuario con correo confirmado que esté en ag_admins. Las consultas van con
+// la sesión de quien entra, nunca con la clave total.
 
 import { createClient } from '@supabase/supabase-js';
 
@@ -29,12 +31,14 @@ async function authenticate(req) {
     return { error: 'forbidden', status: 403 };
   }
 
-  return { user: data.user };
+  return { user: data.user, token };
 }
 
-function getAdminClient() {
-  return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
-    auth: { persistSession: false }
+// Cliente con la sesión de quien entra: la base decide qué puede ver.
+function clienteConSesion(token) {
+  return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY, {
+    auth: { persistSession: false },
+    global: { headers: { Authorization: `Bearer ${token}` } },
   });
 }
 
@@ -45,20 +49,17 @@ export default async function handler(req, res) {
     return res.status(authResult.status).json({ error: authResult.error });
   }
 
-  const admin = getAdminClient();
+  const db = clienteConSesion(authResult.token);
 
   if (req.method === 'GET') {
     // Listar leads (max 1000 — si crece, paginar)
-    const { data, error } = await admin
-      .from('ag_leads')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(1000);
+    const { data, error } = await db.rpc('ag_leads_listar');
 
     if (error) {
       console.error('[leads:list] error:', error);
-      return res.status(500).json({ error: 'query_failed', detail: error.message });
+      return res.status(500).json({ error: 'query_failed' });
     }
+    if (data === null) return res.status(403).json({ error: 'forbidden' });
 
     return res.status(200).json({ leads: data });
   }
@@ -82,17 +83,14 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'no_updates' });
     }
 
-    const { data, error } = await admin
-      .from('ag_leads')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
+    const { data, error } = await db.rpc('ag_leads_nota', { p_id: id, p_notes: updates.notes });
 
     if (error) {
       console.error('[leads:patch] error:', error);
-      return res.status(500).json({ error: 'update_failed', detail: error.message });
+      return res.status(500).json({ error: 'update_failed' });
     }
+    if (data === null) return res.status(403).json({ error: 'forbidden' });
+    if (data.error) return res.status(404).json({ error: 'not_found' });
 
     return res.status(200).json({ lead: data });
   }

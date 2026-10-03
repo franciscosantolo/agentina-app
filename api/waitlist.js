@@ -1,6 +1,7 @@
 // POST /api/waitlist
 // Recibe el form de waitlist desde el sitio público.
-// Valida, inserta en ag_leads (Supabase) y notifica por email (Resend).
+// Valida, guarda el lead con la función ag_waitlist_anotar (Supabase) y notifica por email (Resend).
+// Usa solo la clave pública: la función puede insertar un lead y nada más.
 //
 // Filosofía: errores visibles del lado server, mensajes claros del lado cliente,
 // nunca silencioso. Anti-bot vía honeypot + rate limit por IP en memoria.
@@ -149,42 +150,41 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'validation_failed', fields: errors });
   }
 
-  // Insert en Supabase
+  // Guardar en Supabase con la clave pública: la función solo inserta un lead.
   const supabaseUrl = process.env.SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!supabaseUrl || !serviceKey) {
+  const anonKey = process.env.SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !anonKey) {
     console.error('[waitlist] Missing Supabase env vars');
     return res.status(500).json({ error: 'server_misconfigured' });
   }
 
-  const supabase = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
+  const supabase = createClient(supabaseUrl, anonKey, { auth: { persistSession: false } });
 
   const userAgent = req.headers['user-agent'] ? String(req.headers['user-agent']).slice(0, 500) : null;
 
-  const { data: lead, error: insertError } = await supabase
-    .from('ag_leads')
-    .insert({
-      full_name: fullName,
-      linkedin_url: normalizeLinkedinUrl(linkedin),
-      company,
-      email,
-      whatsapp: normalizeWhatsapp(whatsapp),
-      captured_locale: locale,
-      source_path: sourcePath,
-      user_agent: userAgent,
-      ip_address: ip !== 'unknown' ? ip : null,
-    })
-    .select()
-    .single();
+  const { data: resultado, error: rpcError } = await supabase.rpc('ag_waitlist_anotar', {
+    p_full_name: fullName,
+    p_linkedin_url: normalizeLinkedinUrl(linkedin),
+    p_company: company,
+    p_email: email,
+    p_whatsapp: normalizeWhatsapp(whatsapp),
+    p_captured_locale: locale,
+    p_source_path: sourcePath,
+    p_user_agent: userAgent,
+    p_ip_address: ip !== 'unknown' ? ip : null,
+  });
 
-  if (insertError) {
-    console.error('[waitlist] Insert error:', insertError);
-    // Detectar email duplicado (no devolver 500, devolver mensaje amable)
-    if (insertError.code === '23505') {
-      return res.status(409).json({ error: 'duplicate', message: 'Ya estás en la waitlist. Te avisamos cuando abramos.' });
+  if (rpcError || !resultado || resultado.ok !== true) {
+    console.error('[waitlist] Insert error:', rpcError?.message ?? resultado?.error);
+    if (resultado?.error === 'demasiados_pedidos') {
+      return res.status(429).json({ error: 'rate_limited', message: 'Demasiadas solicitudes. Espera unos segundos.' });
+    }
+    if (resultado?.error === 'datos_invalidos') {
+      return res.status(400).json({ error: 'validation_failed', fields: {} });
     }
     return res.status(500).json({ error: 'insert_failed' });
   }
+  const lead = { id: resultado.id, created_at: new Date().toISOString() };
 
   // Notificación por email (no bloqueante — si falla el email, igual respondemos OK al usuario)
   // Localizado por captured_locale para que el subject/labels coincidan con el idioma

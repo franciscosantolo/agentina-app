@@ -1,6 +1,6 @@
 -- Schema para waitlist de agentina.app
 -- Convención del ecosistema: prefijo ag_ para todas las tablas relacionadas con agentina
--- Ejecutar una vez en el SQL Editor de Supabase del proyecto compartido (mismo de OpenClaw Manager)
+-- Ejecutar una vez en el SQL Editor del proyecto de Supabase de agentina.app
 
 create table if not exists ag_leads (
   id uuid primary key default gen_random_uuid(),
@@ -22,9 +22,8 @@ create index if not exists ag_leads_email_idx on ag_leads (email);
 create index if not exists ag_leads_created_at_idx on ag_leads (created_at desc);
 create index if not exists ag_leads_company_idx on ag_leads (company);
 
--- RLS: solo service_role escribe/lee. Anon no puede nada.
--- El waitlist endpoint usa service_role desde el server.
--- El admin usa service_role detrás de auth Supabase.
+-- RLS: nadie lee ni escribe la tabla desde afuera. El formulario y el admin
+-- pasan por las funciones de ag_leads_funciones.sql, sin la clave total.
 alter table ag_leads enable row level security;
 
 -- Trigger para mantener updated_at actualizado
