@@ -321,7 +321,8 @@
     .step-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
     .step-desc { color: var(--text-muted); font-size: 0.92rem; }
     .soon-tag { display: inline-block; font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--amber); border: 1px solid rgba(245,158,11,0.35); border-radius: 999px; padding: 1px 8px; margin-left: 6px; vertical-align: middle; }
-    .plans-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; }
+    .plans-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
+    @media (min-width: 1280px) { .plans-grid { grid-template-columns: repeat(4, 1fr); gap: 1rem; } .plan-card { padding: 1.6rem 1.35rem; } }
     .plan-envios { margin: 0.2rem 0 1.1rem; }
     .plan-envios-label { display: flex; justify-content: space-between; align-items: baseline; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.45rem; letter-spacing: 0.02em; }
     .plan-envios-label strong { color: var(--text); font-weight: 600; font-size: 0.85rem; }
@@ -332,13 +333,12 @@
     .plan-segment button:focus-visible { outline: 2px solid var(--purple-light); outline-offset: 1px; }
     .plan-cta { margin-top: auto; padding-top: 1.25rem; }
     .plan-boton { display: flex; justify-content: center; width: 100%; box-sizing: border-box; }
-    @media (max-width: 1080px) { .plans-grid { grid-template-columns: repeat(2, 1fr); } }
     .plan-price s { color: var(--text-muted); font-size: 0.55em; font-weight: 400; margin-right: 0.4rem; vertical-align: middle; }
     .plan-periodo { color: var(--text-muted); font-size: 0.5em; font-weight: 400; }
     .plan-card { border: 1px solid var(--border); border-radius: 14px; padding: 1.9rem 1.75rem; background: rgba(255,255,255,0.015); display: flex; flex-direction: column; }
     .plan-card.featured { border-color: var(--border-hover); background: var(--purple-dim); }
     .plan-name { font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--purple-light); font-weight: 700; }
-    .plan-price { font-size: 1.9rem; font-weight: 800; margin: 0.4rem 0 0.2rem; }
+    .plan-price { font-size: clamp(1.45rem, 1.1vw + 0.9rem, 1.9rem); font-weight: 800; margin: 0.4rem 0 0.2rem; white-space: nowrap; }
     .plan-note { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.1rem; }
     .plan-list { list-style: none; display: grid; gap: 0.55rem; font-size: 0.92rem; }
     .plan-list li::before { content: "✓"; color: var(--green); margin-right: 0.5rem; font-weight: 700; }
@@ -560,7 +560,7 @@
             <li>Mensajes conservados al menos 30 días</li>
             <li>Todas las plataformas</li>
           </ul>
-          <div class="plan-cta"><a href="/messenger/?plan=starter" class="btn-primary plan-boton" data-open-waitlist data-plan="starter">Empezar con Starter</a></div>
+          <div class="plan-cta"><a href="/messenger/?plan=starter" class="btn-primary plan-boton" data-open-waitlist data-plan="starter">Empezar</a></div>
         </div>
         <div class="plan-card featured" data-plan-card="pro">
           <div class="plan-name">Pro</div>
@@ -580,7 +580,7 @@
             <li>Mensajes conservados al menos 30 días</li>
             <li>Todas las plataformas</li>
           </ul>
-          <div class="plan-cta"><a href="/messenger/?plan=pro" class="btn-primary plan-boton" data-open-waitlist data-plan="pro">Empezar con Pro</a></div>
+          <div class="plan-cta"><a href="/messenger/?plan=pro" class="btn-primary plan-boton" data-open-waitlist data-plan="pro">Empezar</a></div>
         </div>
         <div class="plan-card" data-plan-card="business">
           <div class="plan-name">Business</div>
@@ -600,7 +600,7 @@
             <li>Mensajes conservados al menos 30 días</li>
             <li>Todas las plataformas</li>
           </ul>
-          <div class="plan-cta"><a href="/messenger/?plan=business" class="btn-primary plan-boton" data-open-waitlist data-plan="business">Empezar con Business</a></div>
+          <div class="plan-cta"><a href="/messenger/?plan=business" class="btn-primary plan-boton" data-open-waitlist data-plan="business">Empezar</a></div>
         </div>
         <div class="plan-card" data-plan-card="enterprise">
           <div class="plan-name">Enterprise</div>
