@@ -1,6 +1,9 @@
 // POST /api/waitlist
 // Recibe el form de waitlist desde el sitio público.
-// Valida, inserta en ag_leads (Supabase) y notifica por email (Resend).
+// Valida, guarda el pedido en la base del producto y notifica por email (Resend).
+//   · Desde /messenger → base de Messenger, función anotar_lista_espera.
+//   · Desde el resto del sitio → base de agentina, función ag_waitlist_anotar.
+// Usa solo la clave publicable de cada base: cada función inserta un pedido y nada más.
 //
 // Filosofía: errores visibles del lado server, mensajes claros del lado cliente,
 // nunca silencioso. Anti-bot vía honeypot + rate limit por IP en memoria.
@@ -9,29 +12,28 @@ import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 
 const RATE_LIMIT_WINDOW_MS = 10_000; // 10s entre requests por IP
+const CANTIDADES = ['1', '2-5', '6-20', '21-50', '50+'];
+const PLATAFORMAS = ['claude_code', 'codex', 'antigravity', 'hermes', 'openclaw', 'otra'];
 const recentByIp = new Map(); // IP -> timestamp último request
 
 // Templates del email de notificación localizados por captured_locale.
-// El email lo lee Francisco — localizar le da contexto rápido del lead
+// El aviso lo lee el equipo — localizar le da contexto rápido del lead
 // (ej: si llegó en EN, probablemente conviene contactarlo en EN).
 const EMAIL_TEMPLATES = {
   es: {
     subject: (name, company) => `Nuevo lead: ${name} (${company})`,
     title: 'Nuevo lead en la waitlist de Agentina',
     labels: { name: 'Nombre', company: 'Empresa', email: 'Email', whatsapp: 'WhatsApp', linkedin: 'LinkedIn', locale: 'Idioma de captura', path: 'Path', date: 'Fecha' },
-    cta: 'Ver en el admin',
   },
   en: {
     subject: (name, company) => `New lead: ${name} (${company})`,
     title: 'New lead on the Agentina waitlist',
     labels: { name: 'Name', company: 'Company', email: 'Email', whatsapp: 'WhatsApp', linkedin: 'LinkedIn', locale: 'Capture language', path: 'Path', date: 'Date' },
-    cta: 'View in admin',
   },
   pt: {
     subject: (name, company) => `Novo lead: ${name} (${company})`,
     title: 'Novo lead na waitlist da Agentina',
     labels: { name: 'Nome', company: 'Empresa', email: 'Email', whatsapp: 'WhatsApp', linkedin: 'LinkedIn', locale: 'Idioma de captura', path: 'Path', date: 'Data' },
-    cta: 'Ver no admin',
   },
 };
 
@@ -95,14 +97,8 @@ function normalizeLinkedinUrl(value) {
 }
 
 export default async function handler(req, res) {
-  // CORS — el sitio sirve desde el mismo dominio, pero por si se llama desde otro contexto
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(204).end();
-  }
+  // Sin CORS: el formulario vive en el mismo dominio, y ninguna otra página
+  // tiene por qué poder usar esta ruta desde el navegador.
 
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'method_not_allowed' });
@@ -111,7 +107,7 @@ export default async function handler(req, res) {
   // Rate limit por IP
   const ip = getClientIp(req);
   if (isRateLimited(ip)) {
-    return res.status(429).json({ error: 'rate_limited', message: 'Demasiadas solicitudes. Esperá unos segundos.' });
+    return res.status(429).json({ error: 'rate_limited', message: 'Demasiadas solicitudes. Espera unos segundos.' });
   }
 
   // Parse body (Vercel Functions parsean JSON automático si Content-Type es application/json)
@@ -137,54 +133,62 @@ export default async function handler(req, res) {
   const whatsapp = String(body.whatsapp || '').trim();
   const locale = ['es', 'en', 'pt'].includes(body.captured_locale) ? body.captured_locale : 'es';
   const sourcePath = body.source_path ? String(body.source_path).slice(0, 500) : null;
+  const esMessenger = typeof sourcePath === 'string' && /^\/messenger(\/|\?|#|$)/.test(sourcePath);
+  const cantidadAgentes = body.cantidad_agentes ? String(body.cantidad_agentes) : null;
+  const plataformas = Array.isArray(body.plataformas) ? [...new Set(body.plataformas.map(String))] : [];
 
   const errors = {};
   if (!fullName || fullName.length < 2) errors.full_name = 'Nombre requerido (mínimo 2 caracteres)';
   if (!company || company.length < 2) errors.company = 'Empresa requerida';
   if (!isValidEmail(email)) errors.email = 'Email inválido';
-  if (!isValidWhatsapp(whatsapp)) errors.whatsapp = 'WhatsApp inválido — incluí código de país (ej: +5491165432100)';
+  if (!isValidWhatsapp(whatsapp)) errors.whatsapp = 'WhatsApp inválido — incluye el código de país (ej: +5491165432100)';
   if (linkedin && !isValidLinkedinUrl(linkedin)) errors.linkedin_url = 'URL de LinkedIn inválida';
+  if (esMessenger) {
+    if (!CANTIDADES.includes(cantidadAgentes)) errors.cantidad_agentes = 'Elige cuántos agentes manejas';
+    if (plataformas.length === 0 || !plataformas.every((x) => PLATAFORMAS.includes(x))) errors.plataformas = 'Marca al menos una plataforma';
+  }
 
   if (Object.keys(errors).length > 0) {
     return res.status(400).json({ error: 'validation_failed', fields: errors });
   }
 
-  // Insert en Supabase
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!supabaseUrl || !serviceKey) {
-    console.error('[waitlist] Missing Supabase env vars');
+  // Guardar en la base del producto, con su clave publicable.
+  const supabaseUrl = esMessenger ? process.env.MESSENGER_SUPABASE_URL : process.env.AGENTINA_SUPABASE_URL;
+  const publicKey = esMessenger ? process.env.MESSENGER_SUPABASE_PUBLISHABLE_KEY : process.env.AGENTINA_SUPABASE_PUBLISHABLE_KEY;
+  if (!supabaseUrl || !publicKey) {
+    console.error('[waitlist] Missing Supabase env vars', esMessenger ? 'messenger' : 'agentina');
     return res.status(500).json({ error: 'server_misconfigured' });
   }
 
-  const supabase = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
+  const supabase = createClient(supabaseUrl, publicKey, { auth: { persistSession: false } });
 
   const userAgent = req.headers['user-agent'] ? String(req.headers['user-agent']).slice(0, 500) : null;
+  const comunes = {
+    p_full_name: fullName,
+    p_linkedin_url: normalizeLinkedinUrl(linkedin),
+    p_company: company,
+    p_email: email,
+    p_whatsapp: normalizeWhatsapp(whatsapp),
+    p_captured_locale: locale,
+    p_source_path: sourcePath,
+    p_user_agent: userAgent,
+    p_ip_address: ip !== 'unknown' ? ip : null,
+  };
+  const { data: resultado, error: rpcError } = esMessenger
+    ? await supabase.rpc('anotar_lista_espera', { ...comunes, p_cantidad_agentes: cantidadAgentes, p_plataformas: plataformas })
+    : await supabase.rpc('ag_waitlist_anotar', comunes);
 
-  const { data: lead, error: insertError } = await supabase
-    .from('ag_leads')
-    .insert({
-      full_name: fullName,
-      linkedin_url: normalizeLinkedinUrl(linkedin),
-      company,
-      email,
-      whatsapp: normalizeWhatsapp(whatsapp),
-      captured_locale: locale,
-      source_path: sourcePath,
-      user_agent: userAgent,
-      ip_address: ip !== 'unknown' ? ip : null,
-    })
-    .select()
-    .single();
-
-  if (insertError) {
-    console.error('[waitlist] Insert error:', insertError);
-    // Detectar email duplicado (no devolver 500, devolver mensaje amable)
-    if (insertError.code === '23505') {
-      return res.status(409).json({ error: 'duplicate', message: 'Ya estás en la waitlist. Te avisamos cuando abramos.' });
+  if (rpcError || !resultado || resultado.ok !== true) {
+    console.error('[waitlist] Insert error:', rpcError?.message ?? resultado?.error);
+    if (resultado?.error === 'demasiados_pedidos') {
+      return res.status(429).json({ error: 'rate_limited', message: 'Demasiadas solicitudes. Espera unos segundos.' });
+    }
+    if (resultado?.error === 'datos_invalidos') {
+      return res.status(400).json({ error: 'validation_failed', fields: {} });
     }
     return res.status(500).json({ error: 'insert_failed' });
   }
+  const lead = { id: resultado.id, created_at: new Date().toISOString() };
 
   // Notificación por email (no bloqueante — si falla el email, igual respondemos OK al usuario)
   // Localizado por captured_locale para que el subject/labels coincidan con el idioma
@@ -194,15 +198,15 @@ export default async function handler(req, res) {
   if (resendKey && notifyEmail) {
     try {
       const resend = new Resend(resendKey);
-      const adminUrl = `https://www.agentina.app/admin/#${lead.id}`;
       const t = EMAIL_TEMPLATES[locale] || EMAIL_TEMPLATES.es;
       const normalizedWa = normalizeWhatsapp(whatsapp);
       const normalizedLi = normalizeLinkedinUrl(linkedin);
       await resend.emails.send({
-        from: 'Agentina <hola@agentina.app>',
-        replyTo: notifyEmail,
+        from: 'agentina <info@agentina.app>',
+        // Responder el aviso le escribe directo a la persona que se anotó.
+        replyTo: email,
         to: notifyEmail,
-        subject: t.subject(fullName, company),
+        subject: (esMessenger ? '[Messenger] ' : '') + t.subject(fullName, company),
         html: `
 <h2>${t.title}</h2>
 <table cellpadding="6" style="border-collapse:collapse;font-family:system-ui,sans-serif">
@@ -211,11 +215,12 @@ export default async function handler(req, res) {
 <tr><td><strong>${t.labels.email}</strong></td><td><a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></td></tr>
 <tr><td><strong>${t.labels.whatsapp}</strong></td><td><a href="https://wa.me/${normalizedWa.replace('+','')}">${escapeHtml(normalizedWa)}</a></td></tr>
 ${linkedin ? `<tr><td><strong>${t.labels.linkedin}</strong></td><td><a href="${escapeHtml(normalizedLi)}">${escapeHtml(normalizedLi)}</a></td></tr>` : ''}
+${esMessenger ? `<tr><td><strong>Agentes</strong></td><td>${escapeHtml(cantidadAgentes)}</td></tr><tr><td><strong>Plataformas</strong></td><td>${escapeHtml(plataformas.join(', '))}</td></tr>` : ''}
 <tr><td><strong>${t.labels.locale}</strong></td><td>${locale.toUpperCase()}</td></tr>
 <tr><td><strong>${t.labels.path}</strong></td><td>${escapeHtml(sourcePath || '/')}</td></tr>
 <tr><td><strong>${t.labels.date}</strong></td><td>${new Date(lead.created_at).toISOString()}</td></tr>
 </table>
-<p><a href="${adminUrl}">${t.cta}</a></p>
+
         `.trim(),
       });
     } catch (emailError) {
