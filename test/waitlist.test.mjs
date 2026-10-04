@@ -38,6 +38,21 @@ await t('desde /messenger va a la base de Messenger con agentes y plataformas', 
   assert.equal(llamadas[0].body.p_cantidad_agentes, '6-20');
   assert.deepEqual(llamadas[0].body.p_plataformas, ['codex', 'antigravity']);
 });
+await t('en Messenger, el plan elegido viaja a la base y uno desconocido se rechaza', async () => {
+  const r = await pedir({ ...base, source_path: '/messenger/?plan=pro', cantidad_agentes: '6-20', plataformas: ['codex'], plan: 'pro' });
+  assert.equal(r.code, 200, JSON.stringify(r.json));
+  assert.equal(llamadas[0].body.p_plan, 'pro');
+  const sin = await pedir({ ...base, source_path: '/messenger/', cantidad_agentes: '6-20', plataformas: ['codex'] });
+  assert.equal(sin.code, 200);
+  assert.equal(llamadas[1].body.p_plan, null, 'sin plan se manda null');
+  for (const malo of ['enterprise', 'gratis', 'oro']) {
+    const m = await pedir({ ...base, source_path: '/messenger/', cantidad_agentes: '6-20', plataformas: ['codex'], plan: malo });
+    assert.equal(m.code, 400, malo);
+    assert.ok(m.json.fields.plan, malo);
+  }
+  assert.equal(llamadas.length, 2, 'los planes desconocidos no llegan a la base');
+});
+
 await t('en Messenger, sin agentes o sin plataformas no llega a la base', async () => {
   for (const extra of [{ plataformas: ['codex'] }, { cantidad_agentes: '6-20', plataformas: [] }, { cantidad_agentes: '7', plataformas: ['codex'] }, { cantidad_agentes: '1', plataformas: ['chatgpt'] }, { cantidad_agentes: '1', plataformas: ['gemini'] }]) {
     const r = await pedir({ ...base, source_path: '/messenger/', ...extra });
@@ -59,4 +74,4 @@ await t('/messengerX no es Messenger, y no hay CORS abierto', async () => {
   const r2 = await pedir({ ...base, source_path: '/messenger?utm=x', cantidad_agentes: '1', plataformas: ['codex'] });
   assert.match(llamadas[1].url, /messenger\.example/, 'con query sigue siendo Messenger');
 });
-console.log(`${ok} de 5 en verde`);
+console.log(`${ok} de 6 en verde`);
