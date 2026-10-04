@@ -14,7 +14,7 @@ import { Resend } from 'resend';
 const RATE_LIMIT_WINDOW_MS = 10_000; // 10s entre requests por IP
 const CANTIDADES = ['1', '2-5', '6-20', '21-50', '50+'];
 const PLATAFORMAS = ['claude_code', 'codex', 'antigravity', 'hermes', 'openclaw', 'otra'];
-const PLANES = ['starter', 'pro', 'business'];
+const PLANES = ['starter', 'pro', 'business', 'enterprise'];
 const recentByIp = new Map(); // IP -> timestamp último request
 
 // Templates del email de notificación localizados por captured_locale.
@@ -179,7 +179,8 @@ export default async function handler(req, res) {
     p_ip_address: ip !== 'unknown' ? ip : null,
   };
   const { data: resultado, error: rpcError } = esMessenger
-    ? await supabase.rpc('anotar_lista_espera', { ...comunes, p_cantidad_agentes: cantidadAgentes, p_plataformas: plataformas, p_plan: plan })
+    // Enterprise no es un producto de la tabla: queda en la ruta de origen (?plan=enterprise) y en el aviso, no en p_plan.
+    ? await supabase.rpc('anotar_lista_espera', { ...comunes, p_cantidad_agentes: cantidadAgentes, p_plataformas: plataformas, p_plan: plan === 'enterprise' ? null : plan })
     : await supabase.rpc('ag_waitlist_anotar', comunes);
 
   if (rpcError || !resultado || resultado.ok !== true) {

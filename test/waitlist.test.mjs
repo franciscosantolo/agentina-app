@@ -45,12 +45,15 @@ await t('en Messenger, el plan elegido viaja a la base y uno desconocido se rech
   const sin = await pedir({ ...base, source_path: '/messenger/', cantidad_agentes: '6-20', plataformas: ['codex'] });
   assert.equal(sin.code, 200);
   assert.equal(llamadas[1].body.p_plan, null, 'sin plan se manda null');
-  for (const malo of ['enterprise', 'gratis', 'oro']) {
+  const ent = await pedir({ ...base, source_path: '/messenger/?plan=enterprise', cantidad_agentes: '21-50', plataformas: ['codex'], plan: 'enterprise' });
+  assert.equal(ent.code, 200);
+  assert.equal(llamadas[2].body.p_plan, null, 'enterprise viaja en la ruta, no en p_plan');
+  for (const malo of ['gratis', 'oro']) {
     const m = await pedir({ ...base, source_path: '/messenger/', cantidad_agentes: '6-20', plataformas: ['codex'], plan: malo });
     assert.equal(m.code, 400, malo);
     assert.ok(m.json.fields.plan, malo);
   }
-  assert.equal(llamadas.length, 2, 'los planes desconocidos no llegan a la base');
+  assert.equal(llamadas.length, 3, 'los planes desconocidos no llegan a la base');
 });
 
 await t('en Messenger, sin agentes o sin plataformas no llega a la base', async () => {
