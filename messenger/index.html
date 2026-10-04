@@ -324,13 +324,11 @@
     .plans-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
     @media (min-width: 1280px) { .plans-grid { grid-template-columns: repeat(4, 1fr); gap: 1rem; } .plan-card { padding: 1.6rem 1.35rem; } }
     .plan-envios { margin: 0.2rem 0 1.1rem; }
-    .plan-envios-label { display: flex; justify-content: space-between; align-items: baseline; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.45rem; letter-spacing: 0.02em; }
-    .plan-envios-label strong { color: var(--text); font-weight: 600; font-size: 0.85rem; }
-    .plan-segment { display: flex; gap: 3px; padding: 3px; border: 1px solid var(--border); border-radius: 10px; background: rgba(255,255,255,0.02); }
-    .plan-segment button { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--text-muted); font: inherit; font-size: 0.85rem; font-weight: 500; padding: 0.5rem 0; border-radius: 8px; cursor: pointer; transition: background 0.15s, color 0.15s; }
-    .plan-segment button:hover { color: var(--text); }
-    .plan-segment button.activo { background: rgba(139,92,246,0.22); color: var(--text); font-weight: 700; box-shadow: inset 0 0 0 1px rgba(139,92,246,0.45); }
-    .plan-segment button:focus-visible { outline: 2px solid var(--purple-light); outline-offset: 1px; }
+    .plan-envios-label { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.45rem; letter-spacing: 0.02em; }
+    .plan-select { width: 100%; appearance: none; -webkit-appearance: none; border: 1px solid var(--border); border-radius: 10px; background: rgba(255,255,255,0.03) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23a78bfa' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 0.9rem center; color: var(--text); font: inherit; font-size: 0.92rem; font-weight: 600; padding: 0.6rem 2.2rem 0.6rem 0.9rem; cursor: pointer; transition: border-color 0.15s; }
+    .plan-select:hover { border-color: var(--border-hover); }
+    .plan-select:focus-visible { outline: 2px solid var(--purple-light); outline-offset: 1px; }
+    .plan-select option { background: #0f0f14; color: var(--text); }
     .plan-cta { margin-top: auto; padding-top: 1.25rem; }
     .plan-boton { display: flex; justify-content: center; width: 100%; box-sizing: border-box; }
     .plan-price s { color: var(--text-muted); font-size: 0.55em; font-weight: 400; margin-right: 0.4rem; vertical-align: middle; }
@@ -547,12 +545,12 @@
           <div class="plan-price" data-precio="starter">USD 9,99 <span class="plan-periodo">/ mes</span></div>
           <div class="plan-note">Primer mes gratis. Para probar con tu equipo.</div>
           <div class="plan-envios">
-            <div class="plan-envios-label"><span>Envíos al mes</span><strong data-envios-texto="starter">250 envíos</strong></div>
-            <div class="plan-segment" role="group" aria-label="Envíos al mes del plan Starter" data-segment="starter">
-                <button type="button" class="activo" aria-pressed="true" data-escalon="1" data-envios="250" data-precio="9.99">250</button>
-                <button type="button" aria-pressed="false" data-escalon="2" data-envios="500" data-precio="14.99">500</button>
-                <button type="button" aria-pressed="false" data-escalon="3" data-envios="1000" data-precio="19.99">1.000</button>
-            </div>
+            <div class="plan-envios-label">Envíos al mes</div>
+            <select class="plan-select" data-select="starter" aria-label="Envíos al mes del plan">
+              <option value="1" data-envios="250" data-precio="9.99" selected>250 envíos al mes</option>
+              <option value="2" data-envios="500" data-precio="14.99">500 envíos al mes</option>
+              <option value="3" data-envios="1000" data-precio="19.99">1.000 envíos al mes</option>
+            </select>
           </div>
           <ul class="plan-list">
             <li data-agentes="starter">Hasta 5 agentes</li>
@@ -567,12 +565,12 @@
           <div class="plan-price" data-precio="pro">USD 44,99 <span class="plan-periodo">/ mes</span></div>
           <div class="plan-note">Primer mes gratis. Para equipos que ya dependen de sus agentes.</div>
           <div class="plan-envios">
-            <div class="plan-envios-label"><span>Envíos al mes</span><strong data-envios-texto="pro">1.500 envíos</strong></div>
-            <div class="plan-segment" role="group" aria-label="Envíos al mes del plan Pro" data-segment="pro">
-                <button type="button" class="activo" aria-pressed="true" data-escalon="1" data-envios="1500" data-precio="44.99">1.500</button>
-                <button type="button" aria-pressed="false" data-escalon="2" data-envios="3000" data-precio="59.99">3.000</button>
-                <button type="button" aria-pressed="false" data-escalon="3" data-envios="5000" data-precio="74.99">5.000</button>
-            </div>
+            <div class="plan-envios-label">Envíos al mes</div>
+            <select class="plan-select" data-select="pro" aria-label="Envíos al mes del plan">
+              <option value="1" data-envios="1500" data-precio="44.99" selected>1.500 envíos al mes</option>
+              <option value="2" data-envios="3000" data-precio="59.99">3.000 envíos al mes</option>
+              <option value="3" data-envios="5000" data-precio="74.99">5.000 envíos al mes</option>
+            </select>
           </div>
           <ul class="plan-list">
             <li data-agentes="pro">Hasta 25 agentes</li>
@@ -587,12 +585,12 @@
           <div class="plan-price" data-precio="business">USD 79,99 <span class="plan-periodo">/ mes</span></div>
           <div class="plan-note">Primer mes gratis. Para operaciones con muchos agentes.</div>
           <div class="plan-envios">
-            <div class="plan-envios-label"><span>Envíos al mes</span><strong data-envios-texto="business">4.000 envíos</strong></div>
-            <div class="plan-segment" role="group" aria-label="Envíos al mes del plan Business" data-segment="business">
-                <button type="button" class="activo" aria-pressed="true" data-escalon="1" data-envios="4000" data-precio="79.99">4.000</button>
-                <button type="button" aria-pressed="false" data-escalon="2" data-envios="8000" data-precio="104.99">8.000</button>
-                <button type="button" aria-pressed="false" data-escalon="3" data-envios="12000" data-precio="129.99">12.000</button>
-            </div>
+            <div class="plan-envios-label">Envíos al mes</div>
+            <select class="plan-select" data-select="business" aria-label="Envíos al mes del plan">
+              <option value="1" data-envios="4000" data-precio="79.99" selected>4.000 envíos al mes</option>
+              <option value="2" data-envios="8000" data-precio="104.99">8.000 envíos al mes</option>
+              <option value="3" data-envios="12000" data-precio="129.99">12.000 envíos al mes</option>
+            </select>
           </div>
           <ul class="plan-list">
             <li data-agentes="business">Hasta 50 agentes</li>
@@ -1135,43 +1133,43 @@
       var elegido = {};  // plan → { escalon, envios, precio }
       function numero(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
       function precio(p) { return 'USD ' + Number(p).toFixed(2).replace('.', ','); }
-      function mostrarNivel(plan, boton) {
-        var seg = document.querySelector('[data-segment="' + plan + '"]');
-        if (!seg || !boton) return;
-        seg.querySelectorAll('button').forEach(function(b) { b.classList.toggle('activo', b === boton); b.setAttribute('aria-pressed', b === boton ? 'true' : 'false'); });
+      function mostrarNivel(plan) {
+        var sel = document.querySelector('[data-select="' + plan + '"]');
+        if (!sel || !sel.selectedOptions.length) return;
+        var op = sel.selectedOptions[0];
         var el;
-        if ((el = document.querySelector('[data-precio="' + plan + '"]'))) el.innerHTML = precio(boton.getAttribute('data-precio')) + ' <span class="plan-periodo">/ mes</span>';
-        if ((el = document.querySelector('[data-envios-texto="' + plan + '"]'))) el.textContent = numero(boton.getAttribute('data-envios')) + ' envíos';
-        elegido[plan] = { escalon: boton.getAttribute('data-escalon'), envios: boton.getAttribute('data-envios'), precio: boton.getAttribute('data-precio') };
+        if ((el = document.querySelector('[data-precio="' + plan + '"]'))) el.innerHTML = precio(op.getAttribute('data-precio')) + ' <span class="plan-periodo">/ mes</span>';
+        elegido[plan] = { escalon: sel.value, envios: op.getAttribute('data-envios'), precio: op.getAttribute('data-precio') };
         if ((el = document.querySelector('[data-opcion="' + plan + '"]'))) {
           var agentes = (document.querySelector('[data-agentes="' + plan + '"]') || {}).textContent || '';
-          el.textContent = NOMBRES[plan] + ' · ' + agentes.replace('Hasta ', '') + ' · ' + numero(boton.getAttribute('data-envios')) + ' envíos · ' + precio(boton.getAttribute('data-precio'));
+          el.textContent = NOMBRES[plan] + ' · ' + agentes.replace('Hasta ', '') + ' · ' + numero(op.getAttribute('data-envios')) + ' envíos · ' + precio(op.getAttribute('data-precio'));
         }
       }
       function armarSelectores() {
         PLANES.forEach(function(plan) {
-          var seg = document.querySelector('[data-segment="' + plan + '"]');
-          if (!seg) return;
-          seg.querySelectorAll('button').forEach(function(b) { b.addEventListener('click', function() { mostrarNivel(plan, b); }); });
-          mostrarNivel(plan, seg.querySelector('button.activo') || seg.querySelector('button'));
+          var sel = document.querySelector('[data-select="' + plan + '"]');
+          if (!sel) return;
+          if (!sel.getAttribute('data-listo')) { sel.addEventListener('change', function() { mostrarNivel(plan); }); sel.setAttribute('data-listo', '1'); }
+          mostrarNivel(plan);
         });
       }
       function pintarPlanes(productos) {
         PLANES.forEach(function(plan) {
           var niveles = productos.filter(function(x) { return x.plan === plan && x.precio_usd_mes != null; }).sort(function(a, b) { return a.escalon - b.escalon; });
           if (!niveles.length) return;
-          var seg = document.querySelector('[data-segment="' + plan + '"]');
           var el;
           if ((el = document.querySelector('[data-agentes="' + plan + '"]'))) el.textContent = 'Hasta ' + numero(niveles[0].limite_agentes) + ' agentes';
-          if (seg) {
-            seg.innerHTML = '';
-            niveles.forEach(function(x, i) {
-              var b = document.createElement('button');
-              b.type = 'button'; b.textContent = numero(x.limite_mensajes_mes);
-              b.setAttribute('data-escalon', String(x.escalon)); b.setAttribute('data-envios', String(x.limite_mensajes_mes)); b.setAttribute('data-precio', String(x.precio_usd_mes));
-              b.setAttribute('aria-pressed', i === 0 ? 'true' : 'false'); if (i === 0) b.className = 'activo';
-              seg.appendChild(b);
+          var sel = document.querySelector('[data-select="' + plan + '"]');
+          if (sel) {
+            var antes = sel.value;
+            sel.innerHTML = '';
+            niveles.forEach(function(x) {
+              var op = document.createElement('option');
+              op.value = String(x.escalon); op.textContent = numero(x.limite_mensajes_mes) + ' envíos al mes';
+              op.setAttribute('data-envios', String(x.limite_mensajes_mes)); op.setAttribute('data-precio', String(x.precio_usd_mes));
+              sel.appendChild(op);
             });
+            sel.value = niveles.some(function(x) { return String(x.escalon) === antes; }) ? antes : String(niveles[0].escalon);
           }
         });
         armarSelectores();
