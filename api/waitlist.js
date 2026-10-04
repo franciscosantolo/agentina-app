@@ -116,7 +116,7 @@ export default async function handler(req, res) {
   // Rate limit por IP
   const ip = getClientIp(req);
   if (isRateLimited(ip)) {
-    return res.status(429).json({ error: 'rate_limited', message: 'Demasiadas solicitudes. Esperá unos segundos.' });
+    return res.status(429).json({ error: 'rate_limited', message: 'Demasiadas solicitudes. Espera unos segundos.' });
   }
 
   // Parse body (Vercel Functions parsean JSON automático si Content-Type es application/json)
@@ -150,7 +150,7 @@ export default async function handler(req, res) {
   if (!fullName || fullName.length < 2) errors.full_name = 'Nombre requerido (mínimo 2 caracteres)';
   if (!company || company.length < 2) errors.company = 'Empresa requerida';
   if (!isValidEmail(email)) errors.email = 'Email inválido';
-  if (!isValidWhatsapp(whatsapp)) errors.whatsapp = 'WhatsApp inválido — incluí código de país (ej: +5491165432100)';
+  if (!isValidWhatsapp(whatsapp)) errors.whatsapp = 'WhatsApp inválido — incluye el código de país (ej: +5491165432100)';
   if (linkedin && !isValidLinkedinUrl(linkedin)) errors.linkedin_url = 'URL de LinkedIn inválida';
   if (esMessenger) {
     if (!CANTIDADES.includes(cantidadAgentes)) errors.cantidad_agentes = 'Elige cuántos agentes manejas';
