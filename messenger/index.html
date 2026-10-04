@@ -323,10 +323,10 @@
     .soon-tag { display: inline-block; font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--amber); border: 1px solid rgba(245,158,11,0.35); border-radius: 999px; padding: 1px 8px; margin-left: 6px; vertical-align: middle; }
     .plans-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
     @media (min-width: 1280px) { .plans-grid { grid-template-columns: repeat(4, 1fr); gap: 1rem; } .plan-card { padding: 1.6rem 1.35rem; } }
-    .plan-campo { display: flex; align-items: stretch; border: 1px solid var(--border-hover); border-radius: 10px; overflow: hidden; background: rgba(0,0,0,0.25); margin: 0.2rem 0 1rem; }
-    .plan-campo label { display: flex; align-items: center; padding: 0 0.9rem; font-size: 0.82rem; font-weight: 600; color: var(--text-muted); border-right: 1px solid var(--border-hover); white-space: nowrap; }
-    .plan-campo .plan-select { flex: 1; min-width: 0; border: 0; border-radius: 0; background-color: transparent; }
-    .plan-precio-caja { border: 1px solid var(--border); border-radius: 10px; padding: 0.9rem 1rem 0.95rem; margin-bottom: 1.1rem; background: rgba(255,255,255,0.02); }
+    .plan-campo { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin: -0.2rem 0 1.1rem; padding-bottom: 0.9rem; border-bottom: 1px solid var(--border); }
+    .plan-campo label { font-size: 0.82rem; color: var(--text-muted); white-space: nowrap; }
+    .plan-campo .plan-select { width: auto; min-width: 0; font-size: 0.85rem; font-weight: 600; padding: 0.35rem 1.9rem 0.35rem 0.7rem; border-radius: 8px; background-position: right 0.65rem center; }
+    .plan-precio-caja { border: 1px solid var(--border); border-radius: 10px; padding: 0.9rem 1rem 0.95rem; margin-bottom: 0.9rem; background: rgba(255,255,255,0.02); }
     .plan-precio-caja .plan-promo { font-size: 0.8rem; font-weight: 700; color: var(--purple-light); letter-spacing: 0.04em; text-transform: uppercase; }
     .plan-precio-caja .plan-price { margin: 0.25rem 0 0.15rem; }
     .plan-precio-caja .plan-despues { font-size: 0.82rem; color: var(--text-muted); }
@@ -550,6 +550,11 @@
         <div class="plan-card" data-plan-card="starter">
           <div class="plan-name">Starter</div>
           <div class="plan-note">Para probar con tu equipo.</div>
+          <div class="plan-precio-caja">
+            <div class="plan-promo">Primer mes gratis</div>
+            <div class="plan-price" data-precio="starter">USD 9,99 <span class="plan-periodo">/ mes</span></div>
+            <div class="plan-despues">Después del primer mes. Sin permanencia.</div>
+          </div>
           <div class="plan-campo">
             <label for="plan-envios-starter">Envíos al mes</label>
             <select class="plan-select" id="plan-envios-starter" data-select="starter">
@@ -557,11 +562,6 @@
               <option value="2" data-envios="500" data-precio="14.99">500 envíos al mes</option>
               <option value="3" data-envios="1000" data-precio="19.99">1.000 envíos al mes</option>
             </select>
-          </div>
-          <div class="plan-precio-caja">
-            <div class="plan-promo">Primer mes gratis</div>
-            <div class="plan-price" data-precio="starter">USD 9,99 <span class="plan-periodo">/ mes</span></div>
-            <div class="plan-despues">Después del primer mes. Sin permanencia.</div>
           </div>
           <ul class="plan-list">
             <li data-agentes="starter">Hasta 5 agentes</li>
@@ -574,6 +574,11 @@
           <div class="plan-etiqueta">Más elegido</div>
           <div class="plan-name">Pro</div>
           <div class="plan-note">Para equipos que ya dependen de sus agentes.</div>
+          <div class="plan-precio-caja">
+            <div class="plan-promo">Primer mes gratis</div>
+            <div class="plan-price" data-precio="pro">USD 44,99 <span class="plan-periodo">/ mes</span></div>
+            <div class="plan-despues">Después del primer mes. Sin permanencia.</div>
+          </div>
           <div class="plan-campo">
             <label for="plan-envios-pro">Envíos al mes</label>
             <select class="plan-select" id="plan-envios-pro" data-select="pro">
@@ -581,11 +586,6 @@
               <option value="2" data-envios="3000" data-precio="59.99">3.000 envíos al mes</option>
               <option value="3" data-envios="5000" data-precio="74.99">5.000 envíos al mes</option>
             </select>
-          </div>
-          <div class="plan-precio-caja">
-            <div class="plan-promo">Primer mes gratis</div>
-            <div class="plan-price" data-precio="pro">USD 44,99 <span class="plan-periodo">/ mes</span></div>
-            <div class="plan-despues">Después del primer mes. Sin permanencia.</div>
           </div>
           <ul class="plan-list">
             <li data-agentes="pro">Hasta 25 agentes</li>
@@ -597,6 +597,11 @@
         <div class="plan-card" data-plan-card="business">
           <div class="plan-name">Business</div>
           <div class="plan-note">Para operaciones con muchos agentes.</div>
+          <div class="plan-precio-caja">
+            <div class="plan-promo">Primer mes gratis</div>
+            <div class="plan-price" data-precio="business">USD 79,99 <span class="plan-periodo">/ mes</span></div>
+            <div class="plan-despues">Después del primer mes. Sin permanencia.</div>
+          </div>
           <div class="plan-campo">
             <label for="plan-envios-business">Envíos al mes</label>
             <select class="plan-select" id="plan-envios-business" data-select="business">
@@ -604,11 +609,6 @@
               <option value="2" data-envios="8000" data-precio="104.99">8.000 envíos al mes</option>
               <option value="3" data-envios="12000" data-precio="129.99">12.000 envíos al mes</option>
             </select>
-          </div>
-          <div class="plan-precio-caja">
-            <div class="plan-promo">Primer mes gratis</div>
-            <div class="plan-price" data-precio="business">USD 79,99 <span class="plan-periodo">/ mes</span></div>
-            <div class="plan-despues">Después del primer mes. Sin permanencia.</div>
           </div>
           <ul class="plan-list">
             <li data-agentes="business">Hasta 50 agentes</li>
