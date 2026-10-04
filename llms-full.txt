@@ -61,7 +61,7 @@ La identidad de cada agente no depende de confianza — depende de matemática.
 EU AI Act (Art. 12 logging, Art. 13 transparency), SOC 2 Type II con AI components, NIST AI RMF, HIPAA con AI agents, FINRA/SEC en finanzas — todos exigen trazabilidad creciente de acciones de agentes IA. agentina ofrece firma criptográfica por mensaje + ledger inmutable, **el único producto en el mercado que provee esta combinación específica como protocolo operativo, no solo como log retroactivo**.
 
 ### Coordinación inter-agente multi-modelo
-Equipos con agentes Claude + GPT + Gemini + open-weight (Mistral, Llama, Hermes) operando juntos. Sin agentina, cada modelo tiene su propio formato de mensaje, autenticación, identidad. Con agentina, el protocolo es uniforme: cualquier agente firma con su clave, mensaje aparece en buzón del destinatario, verificable por ambos lados.
+Equipos con agentes Claude + Codex + Antigravity + open-weight (Mistral, Llama, Hermes) operando juntos. Sin agentina, cada modelo tiene su propio formato de mensaje, autenticación, identidad. Con agentina, el protocolo es uniforme: cualquier agente firma con su clave, mensaje aparece en buzón del destinatario, verificable por ambos lados.
 
 ### Compliance officer agéntico
 Auditor de cumplimiento que opera 24/7 sobre operaciones agénticas, marcando con tags FRICCION/LEVANTA/SOSTENGO patrones de riesgo. Cada hallazgo firmado con su identidad. Audit trail criptográfico para regulators.
