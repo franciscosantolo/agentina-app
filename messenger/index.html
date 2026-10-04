@@ -593,7 +593,7 @@
             <li>Panel con todas las conversaciones de tu cuenta</li>
             <li>Descarga tus mensajes</li>
           </ul>
-          <div class="plan-cta"><a href="/messenger/?plan=starter" class="btn-primary plan-boton" data-open-waitlist data-plan="starter">Empezar</a></div>
+          <div class="plan-cta"><a href="/messenger/?plan=starter" class="btn-primary plan-boton" data-open-waitlist data-plan="starter">Acceso anticipado</a></div>
         </div>
         <div class="plan-card featured" data-plan-card="pro">
           <div class="plan-etiqueta">Más elegido</div>
@@ -620,7 +620,7 @@
             <li>Panel con todas las conversaciones de tu cuenta</li>
             <li>Descarga tus mensajes</li>
           </ul>
-          <div class="plan-cta"><a href="/messenger/?plan=pro" class="btn-primary plan-boton" data-open-waitlist data-plan="pro">Empezar</a></div>
+          <div class="plan-cta"><a href="/messenger/?plan=pro" class="btn-primary plan-boton" data-open-waitlist data-plan="pro">Acceso anticipado</a></div>
         </div>
         <div class="plan-card" data-plan-card="business">
           <div class="plan-name">Business</div>
@@ -646,7 +646,7 @@
             <li>Panel con todas las conversaciones de tu cuenta</li>
             <li>Descarga tus mensajes</li>
           </ul>
-          <div class="plan-cta"><a href="/messenger/?plan=business" class="btn-primary plan-boton" data-open-waitlist data-plan="business">Empezar</a></div>
+          <div class="plan-cta"><a href="/messenger/?plan=business" class="btn-primary plan-boton" data-open-waitlist data-plan="business">Acceso anticipado</a></div>
         </div>
         <div class="plan-card" data-plan-card="enterprise">
           <div class="plan-name">Enterprise</div>
@@ -662,7 +662,7 @@
             <li>Base de datos propia, separada</li>
             <li>Acompañamiento en la puesta en marcha</li>
           </ul>
-          <div class="plan-cta"><a href="mailto:info@agentina.app?subject=Messenger%20Enterprise" class="btn-secondary plan-boton">Escríbenos</a></div>
+          <div class="plan-cta"><a href="/messenger/?plan=enterprise" class="btn-primary plan-boton" data-open-waitlist data-plan="enterprise">Acceso anticipado</a></div>
         </div>
       </div>
     </div>
@@ -1022,6 +1022,7 @@
               <option value="starter" data-opcion="starter">Starter · 5 agentes · 250 envíos · USD 9,99</option>
               <option value="pro" data-opcion="pro">Pro · 25 agentes · 1.500 envíos · USD 44,99</option>
               <option value="business" data-opcion="business">Business · 50 agentes · 4.000 envíos · USD 79,99</option>
+              <option value="enterprise">Enterprise · a medida</option>
             </select>
             <div class="waitlist-error" data-error="plan"></div>
             <input type="hidden" name="envios" id="wl-envios" value="">
@@ -1163,9 +1164,10 @@
 
       var planSelect = document.getElementById('wl-plan');
       var PLANES = ['starter', 'pro', 'business'];
+      var PLANES_FORMULARIO = ['starter', 'pro', 'business', 'enterprise'];
       var enviosInput = document.getElementById('wl-envios');
       function elegirPlan(plan) {
-        if (planSelect && PLANES.indexOf(plan) !== -1) planSelect.value = plan;
+        if (planSelect && PLANES_FORMULARIO.indexOf(plan) !== -1) planSelect.value = plan;
         if (enviosInput) enviosInput.value = (plan && elegido[plan]) ? elegido[plan].envios : '';
       }
       if (planSelect) planSelect.addEventListener('change', function() { elegirPlan(planSelect.value); });
@@ -1236,7 +1238,7 @@
 
       // Llegar con ?plan=starter|pro|business deja el plan elegido y abre el formulario.
       var planPedido = new URLSearchParams(location.search).get('plan');
-      if (planPedido && PLANES.indexOf(planPedido) !== -1) {
+      if (planPedido && PLANES_FORMULARIO.indexOf(planPedido) !== -1) {
         elegirPlan(planPedido);
         openWaitlistModal();
       }
