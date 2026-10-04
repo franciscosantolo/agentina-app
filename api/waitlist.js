@@ -13,7 +13,7 @@ import { Resend } from 'resend';
 
 const RATE_LIMIT_WINDOW_MS = 10_000; // 10s entre requests por IP
 const CANTIDADES = ['1', '2-5', '6-20', '21-50', '50+'];
-const PLATAFORMAS = ['claude_code', 'codex', 'gemini', 'hermes', 'openclaw', 'otra'];
+const PLATAFORMAS = ['claude_code', 'codex', 'antigravity', 'hermes', 'openclaw', 'otra'];
 const recentByIp = new Map(); // IP -> timestamp último request
 
 // Templates del email de notificación localizados por captured_locale.
