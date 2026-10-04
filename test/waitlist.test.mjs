@@ -74,4 +74,30 @@ await t('/messengerX no es Messenger, y no hay CORS abierto', async () => {
   const r2 = await pedir({ ...base, source_path: '/messenger?utm=x', cantidad_agentes: '1', plataformas: ['codex'] });
   assert.match(llamadas[1].url, /messenger\.example/, 'con query sigue siendo Messenger');
 });
-console.log(`${ok} de 6 en verde`);
+
+const { default: planes } = await import('../api/planes.js');
+async function pedirPlanes(method = 'GET') {
+  const res = { code: 0, json: null, headers: {}, status(c) { this.code = c; return this; }, json(j) { this.json = j; return this; }, setHeader(k, v) { this.headers[k.toLowerCase()] = v; } };
+  await planes({ method, headers: {} }, res);
+  return res;
+}
+await t('/api/planes lee productos_publicos de la base de Messenger con la clave publicable y se cachea', async () => {
+  const anterior = globalThis.fetch;
+  globalThis.fetch = async (url, init) => {
+    llamadas.push({ url: String(url), body: JSON.parse(init.body || '{}'), apikey: new Headers(init.headers).get('apikey') });
+    return new Response(JSON.stringify({ ok: true, productos: [{ plan: 'starter', escalon: 1, limite_agentes: 5, limite_mensajes_mes: 250, precio_usd_mes: 9.99 }] }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  };
+  try {
+    const r = await pedirPlanes();
+    assert.equal(r.code, 200, JSON.stringify(r.json));
+    assert.match(llamadas[0].url, /^https:\/\/messenger\.example\.supabase\.co\/rest\/v1\/rpc\/productos_publicos/);
+    assert.equal(llamadas[0].apikey, 'sb_publishable_messenger');
+    assert.deepEqual(r.json.productos[0], { plan: 'starter', escalon: 1, limite_agentes: 5, limite_mensajes_mes: 250, precio_usd_mes: 9.99 });
+    assert.match(r.headers['cache-control'], /s-maxage=300/);
+    assert.equal((await pedirPlanes('POST')).code, 405);
+  } finally {
+    globalThis.fetch = anterior;
+  }
+});
+
+console.log(`${ok} de 7 en verde`);
