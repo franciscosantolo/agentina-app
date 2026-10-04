@@ -9,8 +9,8 @@ export default function handler(req, res) {
     return res.status(405).json({ error: 'method_not_allowed' });
   }
 
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+  const supabaseUrl = process.env.AGENTINA_SUPABASE_URL;
+  const supabaseAnonKey = process.env.AGENTINA_SUPABASE_PUBLISHABLE_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
     return res.status(500).json({ error: 'server_misconfigured' });

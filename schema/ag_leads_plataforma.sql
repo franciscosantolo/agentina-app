@@ -1,12 +1,10 @@
 -- ═══════════════════════════════════════════════════════════════════════
--- ag_leads · funciones para que agentina.app no use la clave total
+-- ag_leads · los interesados de agentina.app, en la base de agentina
 --
--- CORRER EN · el proyecto de Supabase de agentina.app · SQL Editor.
--- Después de ag_leads.sql.
+-- CORRER EN · Supabase de la plataforma agentina · SQL Editor.
 --
--- Hasta ahora el formulario de la lista de espera y el admin de leads usaban
--- la service_role, que puede todo en esta base. Con estas funciones cada uno
--- puede solo lo suyo:
+-- La tabla de leads y sus funciones. Ni el formulario ni el admin usan una
+-- clave total: cada uno puede solo lo suyo:
 --   · ag_waitlist_anotar: cualquiera, solo inserta un lead. Con tope por
 --     minuto y por correo, porque la clave pública es pública.
 --   · ag_leads_listar y ag_leads_nota: solo un usuario de Auth con correo
@@ -18,10 +16,29 @@ BEGIN;
 
 DO $$
 BEGIN
-  IF to_regclass('public.ag_leads') IS NULL THEN
-    RAISE EXCEPTION 'Falta ag_leads: esta no es la base de agentina.app. No se cambió nada.';
+  IF to_regclass('public.workspaces_registry') IS NULL OR to_regclass('public.buzones') IS NOT NULL THEN
+    RAISE EXCEPTION 'Esta migración es solo para la base de la plataforma agentina. No se cambió nada.';
   END IF;
 END $$;
+
+-- Misma forma que la tabla anterior, para poder importar el CSV tal cual.
+CREATE TABLE IF NOT EXISTS ag_leads (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  full_name       TEXT NOT NULL,
+  linkedin_url    TEXT,
+  company         TEXT NOT NULL,
+  email           TEXT NOT NULL,
+  whatsapp        TEXT NOT NULL,
+  captured_locale TEXT NOT NULL DEFAULT 'es',
+  source_path     TEXT,
+  user_agent      TEXT,
+  ip_address      INET,
+  notes           TEXT,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS ag_leads_email_idx ON ag_leads (email);
+CREATE INDEX IF NOT EXISTS ag_leads_created_at_idx ON ag_leads (created_at DESC);
 
 CREATE TABLE IF NOT EXISTS ag_admins (
   email      TEXT PRIMARY KEY CHECK (email = lower(btrim(email))),
@@ -82,8 +99,9 @@ BEGIN
      OR char_length(COALESCE(p_linkedin_url, '')) > 500 THEN
     RETURN jsonb_build_object('ok', false, 'error', 'datos_invalidos');
   END IF;
-  -- La clave pública es pública: el tope lo pone la base, no solo el servidor.
-  IF NOT _ag_por_minuto('waitlist', 60) OR NOT _ag_por_minuto('waitlist:' || v_email, 3) THEN
+  -- La clave pública es pública: el tope lo pone la base. El global es alto:
+  -- solo evita que la tabla crezca sin fin, sin bloquear a nadie por tráfico ajeno.
+  IF NOT _ag_por_minuto('waitlist', 1000) OR NOT _ag_por_minuto('waitlist:' || v_email, 3) THEN
     RETURN jsonb_build_object('ok', false, 'error', 'demasiados_pedidos');
   END IF;
   BEGIN v_ip := NULLIF(btrim(COALESCE(p_ip_address, '')), '')::INET; EXCEPTION WHEN others THEN v_ip := NULL; END;
@@ -108,7 +126,7 @@ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE v_lead ag_leads%ROWTYPE;
 BEGIN
   IF NOT _ag_es_admin() THEN RETURN NULL; END IF;
-  UPDATE ag_leads SET notes = left(COALESCE(p_notes, ''), 5000) WHERE id = p_id RETURNING * INTO v_lead;
+  UPDATE ag_leads SET notes = left(COALESCE(p_notes, ''), 5000), updated_at = now() WHERE id = p_id RETURNING * INTO v_lead;
   IF v_lead.id IS NULL THEN RETURN jsonb_build_object('error', 'no_encontrado'); END IF;
   RETURN to_jsonb(v_lead);
 END $$;

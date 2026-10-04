@@ -1,7 +1,9 @@
 // POST /api/waitlist
 // Recibe el form de waitlist desde el sitio público.
-// Valida, guarda el lead con la función ag_waitlist_anotar (Supabase) y notifica por email (Resend).
-// Usa solo la clave pública: la función puede insertar un lead y nada más.
+// Valida, guarda el pedido en la base del producto y notifica por email (Resend).
+//   · Desde /messenger → base de Messenger, función anotar_lista_espera.
+//   · Desde el resto del sitio → base de agentina, función ag_waitlist_anotar.
+// Usa solo la clave publicable de cada base: cada función inserta un pedido y nada más.
 //
 // Filosofía: errores visibles del lado server, mensajes claros del lado cliente,
 // nunca silencioso. Anti-bot vía honeypot + rate limit por IP en memoria.
@@ -10,6 +12,8 @@ import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 
 const RATE_LIMIT_WINDOW_MS = 10_000; // 10s entre requests por IP
+const CANTIDADES = ['1', '2-5', '6-20', '21-50', '50+'];
+const PLATAFORMAS = ['claude_code', 'codex', 'gemini', 'hermes', 'openclaw', 'otra'];
 const recentByIp = new Map(); // IP -> timestamp último request
 
 // Templates del email de notificación localizados por captured_locale.
@@ -138,6 +142,9 @@ export default async function handler(req, res) {
   const whatsapp = String(body.whatsapp || '').trim();
   const locale = ['es', 'en', 'pt'].includes(body.captured_locale) ? body.captured_locale : 'es';
   const sourcePath = body.source_path ? String(body.source_path).slice(0, 500) : null;
+  const esMessenger = typeof sourcePath === 'string' && sourcePath.startsWith('/messenger');
+  const cantidadAgentes = body.cantidad_agentes ? String(body.cantidad_agentes) : null;
+  const plataformas = Array.isArray(body.plataformas) ? [...new Set(body.plataformas.map(String))] : [];
 
   const errors = {};
   if (!fullName || fullName.length < 2) errors.full_name = 'Nombre requerido (mínimo 2 caracteres)';
@@ -145,24 +152,27 @@ export default async function handler(req, res) {
   if (!isValidEmail(email)) errors.email = 'Email inválido';
   if (!isValidWhatsapp(whatsapp)) errors.whatsapp = 'WhatsApp inválido — incluí código de país (ej: +5491165432100)';
   if (linkedin && !isValidLinkedinUrl(linkedin)) errors.linkedin_url = 'URL de LinkedIn inválida';
+  if (esMessenger) {
+    if (!CANTIDADES.includes(cantidadAgentes)) errors.cantidad_agentes = 'Elige cuántos agentes manejas';
+    if (plataformas.length === 0 || !plataformas.every((x) => PLATAFORMAS.includes(x))) errors.plataformas = 'Marca al menos una plataforma';
+  }
 
   if (Object.keys(errors).length > 0) {
     return res.status(400).json({ error: 'validation_failed', fields: errors });
   }
 
-  // Guardar en Supabase con la clave pública: la función solo inserta un lead.
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const anonKey = process.env.SUPABASE_ANON_KEY;
-  if (!supabaseUrl || !anonKey) {
-    console.error('[waitlist] Missing Supabase env vars');
+  // Guardar en la base del producto, con su clave publicable.
+  const supabaseUrl = esMessenger ? process.env.MESSENGER_SUPABASE_URL : process.env.AGENTINA_SUPABASE_URL;
+  const publicKey = esMessenger ? process.env.MESSENGER_SUPABASE_PUBLISHABLE_KEY : process.env.AGENTINA_SUPABASE_PUBLISHABLE_KEY;
+  if (!supabaseUrl || !publicKey) {
+    console.error('[waitlist] Missing Supabase env vars', esMessenger ? 'messenger' : 'agentina');
     return res.status(500).json({ error: 'server_misconfigured' });
   }
 
-  const supabase = createClient(supabaseUrl, anonKey, { auth: { persistSession: false } });
+  const supabase = createClient(supabaseUrl, publicKey, { auth: { persistSession: false } });
 
   const userAgent = req.headers['user-agent'] ? String(req.headers['user-agent']).slice(0, 500) : null;
-
-  const { data: resultado, error: rpcError } = await supabase.rpc('ag_waitlist_anotar', {
+  const comunes = {
     p_full_name: fullName,
     p_linkedin_url: normalizeLinkedinUrl(linkedin),
     p_company: company,
@@ -172,7 +182,10 @@ export default async function handler(req, res) {
     p_source_path: sourcePath,
     p_user_agent: userAgent,
     p_ip_address: ip !== 'unknown' ? ip : null,
-  });
+  };
+  const { data: resultado, error: rpcError } = esMessenger
+    ? await supabase.rpc('anotar_lista_espera', { ...comunes, p_cantidad_agentes: cantidadAgentes, p_plataformas: plataformas })
+    : await supabase.rpc('ag_waitlist_anotar', comunes);
 
   if (rpcError || !resultado || resultado.ok !== true) {
     console.error('[waitlist] Insert error:', rpcError?.message ?? resultado?.error);
@@ -194,7 +207,7 @@ export default async function handler(req, res) {
   if (resendKey && notifyEmail) {
     try {
       const resend = new Resend(resendKey);
-      const adminUrl = `https://www.agentina.app/admin/#${lead.id}`;
+      const adminUrl = esMessenger ? null : `https://www.agentina.app/admin/#${lead.id}`;
       const t = EMAIL_TEMPLATES[locale] || EMAIL_TEMPLATES.es;
       const normalizedWa = normalizeWhatsapp(whatsapp);
       const normalizedLi = normalizeLinkedinUrl(linkedin);
@@ -202,7 +215,7 @@ export default async function handler(req, res) {
         from: 'Agentina <hola@agentina.app>',
         replyTo: notifyEmail,
         to: notifyEmail,
-        subject: t.subject(fullName, company),
+        subject: (esMessenger ? '[Messenger] ' : '') + t.subject(fullName, company),
         html: `
 <h2>${t.title}</h2>
 <table cellpadding="6" style="border-collapse:collapse;font-family:system-ui,sans-serif">
@@ -211,11 +224,12 @@ export default async function handler(req, res) {
 <tr><td><strong>${t.labels.email}</strong></td><td><a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></td></tr>
 <tr><td><strong>${t.labels.whatsapp}</strong></td><td><a href="https://wa.me/${normalizedWa.replace('+','')}">${escapeHtml(normalizedWa)}</a></td></tr>
 ${linkedin ? `<tr><td><strong>${t.labels.linkedin}</strong></td><td><a href="${escapeHtml(normalizedLi)}">${escapeHtml(normalizedLi)}</a></td></tr>` : ''}
+${esMessenger ? `<tr><td><strong>Agentes</strong></td><td>${escapeHtml(cantidadAgentes)}</td></tr><tr><td><strong>Plataformas</strong></td><td>${escapeHtml(plataformas.join(', '))}</td></tr>` : ''}
 <tr><td><strong>${t.labels.locale}</strong></td><td>${locale.toUpperCase()}</td></tr>
 <tr><td><strong>${t.labels.path}</strong></td><td>${escapeHtml(sourcePath || '/')}</td></tr>
 <tr><td><strong>${t.labels.date}</strong></td><td>${new Date(lead.created_at).toISOString()}</td></tr>
 </table>
-<p><a href="${adminUrl}">${t.cta}</a></p>
+${adminUrl ? `<p><a href="${adminUrl}">${t.cta}</a></p>` : ''}
         `.trim(),
       });
     } catch (emailError) {

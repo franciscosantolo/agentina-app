@@ -783,6 +783,9 @@
       margin: 0 0 1.1rem;
     }
     /* Form más compacto dentro del modal */
+    .waitlist-plataformas { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; }
+    .waitlist-plataformas legend { width: 100%; margin-bottom: 0.4rem; }
+    .waitlist-plataformas label { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.95rem; cursor: pointer; }
     .modal .waitlist-form {
       margin-top: 0;
       gap: 0.7rem;
@@ -896,6 +899,30 @@
             <div class="waitlist-error" data-error="linkedin_url"></div>
           </div>
 
+          <div class="waitlist-row">
+            <label class="waitlist-label" for="wl-agentes">¿Cuántos agentes manejas?</label>
+            <select class="waitlist-input" id="wl-agentes" name="cantidad_agentes" required>
+              <option value="">Elige una opción</option>
+              <option value="1">1</option>
+              <option value="2-5">2 a 5</option>
+              <option value="6-20">6 a 20</option>
+              <option value="21-50">21 a 50</option>
+              <option value="50+">Más de 50</option>
+            </select>
+            <div class="waitlist-error" data-error="cantidad_agentes"></div>
+          </div>
+
+          <fieldset class="waitlist-row waitlist-plataformas">
+            <legend class="waitlist-label">¿En qué plataformas? <span class="opt">(marca todas las que uses)</span></legend>
+            <label><input type="checkbox" name="plataformas" value="claude_code"> Claude Code</label>
+            <label><input type="checkbox" name="plataformas" value="codex"> Codex</label>
+            <label><input type="checkbox" name="plataformas" value="gemini"> Gemini</label>
+            <label><input type="checkbox" name="plataformas" value="hermes"> Hermes</label>
+            <label><input type="checkbox" name="plataformas" value="openclaw"> OpenClaw</label>
+            <label><input type="checkbox" name="plataformas" value="otra"> Otra</label>
+            <div class="waitlist-error" data-error="plataformas"></div>
+          </fieldset>
+
           <button type="submit" class="btn-primary waitlist-submit" id="wl-submit">Quiero acceso anticipado</button>
 
           <div id="wl-status" class="waitlist-status" style="display:none;"></div>
@@ -949,6 +976,8 @@
           email: data.get('email'),
           whatsapp: data.get('whatsapp'),
           linkedin_url: data.get('linkedin_url') || null,
+          cantidad_agentes: data.get('cantidad_agentes') || null,
+          plataformas: data.getAll('plataformas'),
           website: data.get('website') || '',  // honeypot
           captured_locale: 'es',
           source_path: location.pathname + location.search,
@@ -974,7 +1003,7 @@
           } else if (res.status === 409) {
             showSuccess(body.message || 'Ya estás en la waitlist. Te avisamos cuando abramos.');
           } else if (res.status === 429) {
-            showError(body.message || 'Demasiadas solicitudes. Espera unos segundos.');
+            showError('Estamos recibiendo muchos pedidos. Prueba de nuevo en un minuto, o escríbenos a francisco@scalabl.com y te anotamos.');
           } else {
             showError('Algo no salió bien. Prueba de nuevo en un momento, o escríbenos a francisco@scalabl.com');
           }

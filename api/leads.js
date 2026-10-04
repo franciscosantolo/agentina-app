@@ -15,8 +15,8 @@ async function authenticate(req) {
   if (!match) return { error: 'missing_token', status: 401 };
 
   const token = match[1];
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const anonKey = process.env.SUPABASE_ANON_KEY;
+  const supabaseUrl = process.env.AGENTINA_SUPABASE_URL;
+  const anonKey = process.env.AGENTINA_SUPABASE_PUBLISHABLE_KEY;
   if (!supabaseUrl || !anonKey) return { error: 'server_misconfigured', status: 500 };
 
   // Verificar el token con Supabase (devuelve user si es válido)
@@ -36,7 +36,7 @@ async function authenticate(req) {
 
 // Cliente con la sesión de quien entra: la base decide qué puede ver.
 function clienteConSesion(token) {
-  return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY, {
+  return createClient(process.env.AGENTINA_SUPABASE_URL, process.env.AGENTINA_SUPABASE_PUBLISHABLE_KEY, {
     auth: { persistSession: false },
     global: { headers: { Authorization: `Bearer ${token}` } },
   });
