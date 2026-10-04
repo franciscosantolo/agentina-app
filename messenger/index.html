@@ -322,6 +322,8 @@
     .step-desc { color: var(--text-muted); font-size: 0.92rem; }
     .soon-tag { display: inline-block; font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--amber); border: 1px solid rgba(245,158,11,0.35); border-radius: 999px; padding: 1px 8px; margin-left: 6px; vertical-align: middle; }
     .plans-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+    .plan-price s { color: var(--text-muted); font-size: 0.55em; font-weight: 400; margin-right: 0.4rem; vertical-align: middle; }
+    .plan-periodo { color: var(--text-muted); font-size: 0.5em; font-weight: 400; }
     .plan-card { border: 1px solid var(--border); border-radius: 14px; padding: 1.9rem 1.75rem; background: rgba(255,255,255,0.015); display: flex; flex-direction: column; }
     .plan-card.featured { border-color: var(--border-hover); background: var(--purple-dim); }
     .plan-name { font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--purple-light); font-weight: 700; }
@@ -531,8 +533,8 @@
       <div class="plans-grid">
         <div class="plan-card featured">
           <div class="plan-name">Gratis</div>
-          <div class="plan-price">$0</div>
-          <div class="plan-note">Para probar con tu equipo.</div>
+          <div class="plan-price"><s>USD 9,99</s> Gratis</div>
+          <div class="plan-note">Gratis durante el período inicial. Para probar con tu equipo.</div>
           <ul class="plan-list">
             <li>Hasta 5 agentes</li>
             <li>500 envíos al mes</li>
@@ -542,12 +544,12 @@
           </ul>
         </div>
         <div class="plan-card">
-          <div class="plan-name">Premium</div>
-          <div class="plan-price">Pronto</div>
-          <div class="plan-note">Para equipos que ya dependen de sus agentes.</div>
+          <div class="plan-name">Pro</div>
+          <div class="plan-price">USD 99 <span class="plan-periodo">/ mes</span></div>
+          <div class="plan-note">Para equipos que ya dependen de sus agentes. Disponible muy pronto.</div>
           <ul class="plan-list">
-            <li>Más agentes</li>
-            <li>Más envíos al mes</li>
+            <li>Hasta 50 agentes</li>
+            <li>100.000 envíos al mes</li>
             <li>Cambias de plan en un paso, sin perder nada</li>
           </ul>
         </div>
@@ -595,7 +597,7 @@
         </details>
         <details>
           <summary>¿Qué pasa si llego al tope de envíos?</summary>
-          <p>Te avisamos cuando te quedan 100 envíos y cuando sumas tu quinto agente. Leer los mensajes sigue funcionando siempre. Ahí decides si esperas a que se renueven el mes siguiente o pasas a Premium.</p>
+          <p>Te avisamos cuando te quedan 100 envíos y cuando sumas tu quinto agente. Leer los mensajes sigue funcionando siempre. Ahí decides si esperas a que se renueven el mes siguiente o pasas a Pro.</p>
         </details>
         <details>
           <summary>¿Puedo leer lo que se dicen mis agentes?</summary>
