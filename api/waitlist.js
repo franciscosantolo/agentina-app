@@ -17,26 +17,23 @@ const PLATAFORMAS = ['claude_code', 'codex', 'antigravity', 'hermes', 'openclaw'
 const recentByIp = new Map(); // IP -> timestamp último request
 
 // Templates del email de notificación localizados por captured_locale.
-// El email lo lee Francisco — localizar le da contexto rápido del lead
+// El aviso lo lee el equipo — localizar le da contexto rápido del lead
 // (ej: si llegó en EN, probablemente conviene contactarlo en EN).
 const EMAIL_TEMPLATES = {
   es: {
     subject: (name, company) => `Nuevo lead: ${name} (${company})`,
     title: 'Nuevo lead en la waitlist de Agentina',
     labels: { name: 'Nombre', company: 'Empresa', email: 'Email', whatsapp: 'WhatsApp', linkedin: 'LinkedIn', locale: 'Idioma de captura', path: 'Path', date: 'Fecha' },
-    cta: 'Ver en el admin',
   },
   en: {
     subject: (name, company) => `New lead: ${name} (${company})`,
     title: 'New lead on the Agentina waitlist',
     labels: { name: 'Name', company: 'Company', email: 'Email', whatsapp: 'WhatsApp', linkedin: 'LinkedIn', locale: 'Capture language', path: 'Path', date: 'Date' },
-    cta: 'View in admin',
   },
   pt: {
     subject: (name, company) => `Novo lead: ${name} (${company})`,
     title: 'Novo lead na waitlist da Agentina',
     labels: { name: 'Nome', company: 'Empresa', email: 'Email', whatsapp: 'WhatsApp', linkedin: 'LinkedIn', locale: 'Idioma de captura', path: 'Path', date: 'Data' },
-    cta: 'Ver no admin',
   },
 };
 
@@ -100,14 +97,8 @@ function normalizeLinkedinUrl(value) {
 }
 
 export default async function handler(req, res) {
-  // CORS — el sitio sirve desde el mismo dominio, pero por si se llama desde otro contexto
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(204).end();
-  }
+  // Sin CORS: el formulario vive en el mismo dominio, y ninguna otra página
+  // tiene por qué poder usar esta ruta desde el navegador.
 
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'method_not_allowed' });
@@ -142,7 +133,7 @@ export default async function handler(req, res) {
   const whatsapp = String(body.whatsapp || '').trim();
   const locale = ['es', 'en', 'pt'].includes(body.captured_locale) ? body.captured_locale : 'es';
   const sourcePath = body.source_path ? String(body.source_path).slice(0, 500) : null;
-  const esMessenger = typeof sourcePath === 'string' && sourcePath.startsWith('/messenger');
+  const esMessenger = typeof sourcePath === 'string' && /^\/messenger(\/|\?|#|$)/.test(sourcePath);
   const cantidadAgentes = body.cantidad_agentes ? String(body.cantidad_agentes) : null;
   const plataformas = Array.isArray(body.plataformas) ? [...new Set(body.plataformas.map(String))] : [];
 
@@ -207,7 +198,6 @@ export default async function handler(req, res) {
   if (resendKey && notifyEmail) {
     try {
       const resend = new Resend(resendKey);
-      const adminUrl = esMessenger ? null : `https://www.agentina.app/admin/#${lead.id}`;
       const t = EMAIL_TEMPLATES[locale] || EMAIL_TEMPLATES.es;
       const normalizedWa = normalizeWhatsapp(whatsapp);
       const normalizedLi = normalizeLinkedinUrl(linkedin);
@@ -230,7 +220,7 @@ ${esMessenger ? `<tr><td><strong>Agentes</strong></td><td>${escapeHtml(cantidadA
 <tr><td><strong>${t.labels.path}</strong></td><td>${escapeHtml(sourcePath || '/')}</td></tr>
 <tr><td><strong>${t.labels.date}</strong></td><td>${new Date(lead.created_at).toISOString()}</td></tr>
 </table>
-${adminUrl ? `<p><a href="${adminUrl}">${t.cta}</a></p>` : ''}
+
         `.trim(),
       });
     } catch (emailError) {
