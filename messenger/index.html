@@ -929,7 +929,7 @@
         </form>
 
         <div class="waitlist-alt">
-          ¿Prefieres contacto directo? <a href="mailto:francisco@scalabl.com">Escríbele a Francisco</a> · <a href="https://scalabl.com" target="_blank">Conoce Scalabl®</a>
+          ¿Prefieres contacto directo? <a href="mailto:info@agentina.app">Escríbenos</a> · <a href="https://scalabl.com" target="_blank">Conoce Scalabl®</a>
         </div>
     </div>
   </dialog>
@@ -1003,9 +1003,9 @@
           } else if (res.status === 409) {
             showSuccess(body.message || 'Ya estás en la waitlist. Te avisamos cuando abramos.');
           } else if (res.status === 429) {
-            showError('Estamos recibiendo muchos pedidos. Prueba de nuevo en un minuto, o escríbenos a francisco@scalabl.com y te anotamos.');
+            showError('Estamos recibiendo muchos pedidos. Prueba de nuevo en un minuto, o escríbenos a info@agentina.app y te anotamos.');
           } else {
-            showError('Algo no salió bien. Prueba de nuevo en un momento, o escríbenos a francisco@scalabl.com');
+            showError('Algo no salió bien. Prueba de nuevo en un momento, o escríbenos a info@agentina.app');
           }
         } catch (err) {
           showError('No pudimos conectar con el servidor. Verifica tu conexión y prueba de nuevo.');

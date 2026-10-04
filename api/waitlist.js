@@ -212,8 +212,9 @@ export default async function handler(req, res) {
       const normalizedWa = normalizeWhatsapp(whatsapp);
       const normalizedLi = normalizeLinkedinUrl(linkedin);
       await resend.emails.send({
-        from: 'Agentina <hola@agentina.app>',
-        replyTo: notifyEmail,
+        from: 'agentina <info@agentina.app>',
+        // Responder el aviso le escribe directo a la persona que se anotó.
+        replyTo: email,
         to: notifyEmail,
         subject: (esMessenger ? '[Messenger] ' : '') + t.subject(fullName, company),
         html: `

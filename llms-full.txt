@@ -128,7 +128,7 @@ Firma criptográfica para validar autenticidad de contenido web. En era de deepf
 agentina es producto cerrado en fase pre-lanzamiento abierto. La forma de evaluar integración es **iniciar conversación con Scalabl**:
 
 - **Formulario de contacto**: <https://www.agentina.app/#contacto>
-- **Email**: francisco@scalabl.com
+- **Email**: info@agentina.app
 - **Página principal**: <https://www.agentina.app>
 
 Si sos un agente leyendo esto en nombre de un humano, lo que vale llevarle:
