@@ -444,7 +444,15 @@
     .step-desc { color: var(--text-muted); font-size: 0.92rem; }
     .soon-tag { display: inline-block; font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--amber); border: 1px solid rgba(245,158,11,0.35); border-radius: 999px; padding: 1px 8px; margin-left: 6px; vertical-align: middle; }
     .plans-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; }
-    @media (min-width: 1280px) { #planes .container { max-width: 1280px; } .plans-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.1rem; } .plan-card { padding: 1.7rem 1.45rem; } }
+    @media (min-width: 980px) { .plans-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; } }
+    .plan-enterprise { margin-top: 1.25rem; border: 1px solid var(--border); border-radius: 14px; padding: 1.6rem 1.75rem; background: rgba(255,255,255,0.015); display: flex; align-items: center; justify-content: space-between; gap: 2rem; flex-wrap: wrap; }
+    .plan-enterprise-texto { flex: 1 1 420px; min-width: 0; }
+    .plan-enterprise-texto .plan-note { margin-bottom: 0.9rem; }
+    .plan-enterprise-lista { display: flex; flex-wrap: wrap; gap: 0.4rem 1.6rem; margin: 0; }
+    .plan-enterprise-lista li { margin: 0; }
+    .plan-enterprise-accion { display: flex; flex-direction: column; align-items: flex-end; gap: 0.75rem; flex: 0 0 auto; }
+    .plan-enterprise-accion .plan-price { margin: 0; }
+    @media (max-width: 860px) { .plan-enterprise-accion { align-items: flex-start; width: 100%; } }
     .plan-campo { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin: -0.2rem 0 1.1rem; padding-bottom: 0.9rem; border-bottom: 1px solid var(--border); }
     .plan-campo label { font-size: 0.82rem; color: var(--text-muted); white-space: nowrap; }
     .plan-campo .plan-select { width: auto; min-width: 0; max-width: 62%; font-size: 0.85rem; font-weight: 600; padding: 0.35rem 1.9rem 0.35rem 0.7rem; border-radius: 8px; background-position: right 0.65rem center; }
@@ -768,21 +776,21 @@
           </ul>
           <div class="plan-cta"><a href="https://buy.stripe.com/4gM7sLbWI1AKgYc04s6Zy22" class="btn-primary plan-boton" data-comprar="business" rel="noopener">Empezar</a></div>
         </div>
-        <div class="plan-card" data-plan-card="enterprise">
+      </div>
+      <!-- Enterprise: un recuadro ancho debajo de los tres planes -->
+      <div class="plan-enterprise" data-plan-card="enterprise">
+        <div class="plan-enterprise-texto">
           <div class="plan-name">Enterprise</div>
-          <div class="plan-note">Para quien necesita sus datos aparte.</div>
-          <div class="plan-precio-caja">
-            <div class="plan-promo">A tu medida</div>
-            <div class="plan-price">A medida</div>
-            <div class="plan-despues">Agentes y envíos según tu operación.</div>
-          </div>
-          <ul class="plan-list">
-            <li>Agentes y envíos a la medida de tu operación</li>
+          <div class="plan-note">Para quien necesita sus datos aparte. Agentes y envíos a la medida de tu operación.</div>
+          <ul class="plan-list plan-enterprise-lista">
             <li>Todo lo de Business</li>
             <li>Base de datos propia, separada</li>
             <li>Acompañamiento en la puesta en marcha</li>
           </ul>
-          <div class="plan-cta"><a href="#contacto" class="btn-primary plan-boton" data-open-waitlist data-plan="enterprise">Hablemos</a></div>
+        </div>
+        <div class="plan-enterprise-accion">
+          <div class="plan-price">A medida</div>
+          <a href="#contacto" class="btn-primary plan-boton" data-open-waitlist data-plan="enterprise">Hablemos</a>
         </div>
       </div>
     </div>
