@@ -199,7 +199,11 @@ export default async function handler(req, res) {
   // Localizado por captured_locale para que el subject/labels coincidan con el idioma
   // del lead — útil para contexto rápido al decidir cómo contactarlo.
   const resendKey = process.env.RESEND_API_KEY;
-  const notifyEmail = process.env.NOTIFICATION_EMAIL;
+  // Un lead de prueba (nombre que empieza con PRUEBA) se guarda pero no avisa:
+  // los avisos van a la bandeja de Francisco y una prueba no es un lead (Trama, 11-oct-2026).
+  const esPrueba = /^PRUEBA\b/i.test(fullName);
+  const notifyEmail = esPrueba ? null : process.env.NOTIFICATION_EMAIL;
+  if (esPrueba) console.log('[waitlist] lead de prueba, sin aviso:', lead.id);
   if (resendKey && notifyEmail) {
     try {
       const resend = new Resend(resendKey);
